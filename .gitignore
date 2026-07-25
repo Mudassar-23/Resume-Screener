@@ -1,0 +1,52 @@
+# ─── ENVIRONMENT VARIABLES & SECRETS ─────────────────────────────────────────
+# Never commit API keys, passwords, or credentials
+backend/.env
+.env
+.env.*
+*.env
+
+# ─── PYTHON VIRTUAL ENVIRONMENT ───────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ─── PYTHON CACHE & COMPILED FILES ────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# ─── DATABASE FILES ───────────────────────────────────────────────────────────
+# SQLite auto-generated fallback database
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── UPLOADED RESUME FILES ────────────────────────────────────────────────────
+backend/uploads/
+
+# ─── DISTRIBUTION / BUILD ─────────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+
+# ─── IDE & EDITOR FILES ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ─── OS GENERATED FILES ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── LOGS ─────────────────────────────────────────────────────────────────────
+*.log
+logs/

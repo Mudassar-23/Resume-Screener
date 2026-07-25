@@ -1,0 +1,19 @@
+Jane Smith
+Email: jane.smith@example.com
+Phone: +1 (555) 092-1133
+
+Summary:
+Graphic Designer with 1 year of internship experience. Looking for a transition into technical writing or junior QA engineering.
+
+Skills:
+- Design: Adobe Photoshop, Figma, Illustrator
+- Soft Skills: Communication, Teamwork, Organization
+- Tools: Microsoft Word, PowerPoint
+
+Experience:
+Design Intern | Creative Studios (2025)
+- Created social media assets and graphics.
+- Assisted with client presentations.
+
+Education:
+Associate Degree in Fine Arts | City College (2023 - 2025)

@@ -1,0 +1,877 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+<style>
+  :root{
+    --bg:#F5F7FA; --surface:#FFFFFF; --surface-2:#EEF1F5; --ink:#171B26; --muted:#626B7D;
+    --border:#E1E5EB; --accent:#3454D1; --accent-ink:#1F3399; --accent-bg:#E9EDFC;
+    --shortlist:#0F8A5F; --shortlist-bg:#E4F6EE;
+    --review:#B4780E; --review-bg:#FBEFDA;
+    --reject:#C23B2F; --reject-bg:#FBE7E4;
+    --radius:10px; --radius-lg:16px;
+    --font-display:'Fraunces', serif; --font-body:'Inter', sans-serif; --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  #rs-root{
+    font-family:var(--font-body); background:var(--bg); color:var(--ink);
+    min-height:100vh; padding:0; -webkit-font-smoothing:antialiased;
+  }
+  #rs-root button{font-family:inherit; cursor:pointer;}
+  #rs-root input, #rs-root textarea, #rs-root select{font-family:inherit;}
+  .rs-scroll{max-height:100%;}
+
+  /* ---------- Welcome ---------- */
+  .rs-welcome{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .rs-welcome-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:44px 40px; max-width:420px; width:100%; box-shadow:0 1px 3px rgba(23,27,38,0.04);
+  }
+  .rs-eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-bottom:10px;
+  }
+  .rs-welcome-card h1{
+    font-family:var(--font-display); font-size:28px; font-weight:600; margin:0 0 8px; line-height:1.2;
+  }
+  .rs-welcome-card p{color:var(--muted); font-size:14.5px; line-height:1.5; margin:0 0 24px;}
+  .rs-field label{display:block; font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:6px;}
+  .rs-field input{
+    width:100%; padding:11px 13px; border:1px solid var(--border); border-radius:8px; font-size:14.5px;
+    background:var(--bg); outline:none; transition:border-color .15s;
+  }
+  .rs-field input:focus{border-color:var(--accent);}
+  .rs-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    background:var(--accent); color:#fff; border:none; padding:11px 18px; border-radius:8px;
+    font-size:14px; font-weight:600; transition:background .15s;
+  }
+  .rs-btn:hover{background:var(--accent-ink);}
+  .rs-btn:disabled{opacity:.5; cursor:not-allowed;}
+  .rs-btn-secondary{background:var(--surface-2); color:var(--ink);}
+  .rs-btn-secondary:hover{background:var(--border);}
+  .rs-btn-block{width:100%; margin-top:18px;}
+  .rs-btn-ghost{background:transparent; color:var(--muted); padding:8px 10px;}
+  .rs-btn-ghost:hover{background:var(--surface-2); color:var(--ink);}
+
+  /* ---------- Shell ---------- */
+  .rs-shell{display:flex; min-height:100vh;}
+  .rs-sidebar{
+    width:260px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border);
+    padding:22px 18px; display:flex; flex-direction:column; gap:22px;
+  }
+  .rs-brand{display:flex; align-items:center; gap:10px;}
+  .rs-brand-mark{
+    width:32px; height:32px; border-radius:8px; background:var(--accent); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display);
+    font-weight:700; font-size:15px; flex-shrink:0;
+  }
+  .rs-brand-name{font-family:var(--font-display); font-weight:600; font-size:16px;}
+  .rs-brand-sub{font-size:11px; color:var(--muted);}
+  .rs-hr-name{font-size:12.5px; color:var(--muted); padding:0 2px;}
+
+  .rs-sidebar-section-label{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .rs-job-list{display:flex; flex-direction:column; gap:5px; overflow-y:auto;}
+  .rs-job-item{
+    padding:10px 11px; border-radius:8px; cursor:pointer; border:1px solid transparent;
+    font-size:13.5px; font-weight:500; line-height:1.3;
+  }
+  .rs-job-item:hover{background:var(--surface-2);}
+  .rs-job-item.active{background:var(--accent-bg); border-color:var(--accent); color:var(--accent-ink);}
+  .rs-job-item .rs-job-count{font-size:11px; color:var(--muted); font-weight:400; margin-top:2px;}
+  .rs-job-item.active .rs-job-count{color:var(--accent-ink); opacity:.75;}
+  .rs-add-job-btn{
+    border:1px dashed var(--border); background:transparent; color:var(--muted);
+    padding:9px; border-radius:8px; font-size:13px; font-weight:600; width:100%; text-align:left;
+  }
+  .rs-add-job-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .rs-sidebar-footer{margin-top:auto; font-size:11px; color:var(--muted); border-top:1px solid var(--border); padding-top:14px;}
+
+  .rs-main{flex:1; min-width:0; padding:28px 34px 60px; overflow-y:auto;}
+  .rs-header{margin-bottom:22px;}
+  .rs-header h2{font-family:var(--font-display); font-size:24px; font-weight:600; margin:0 0 4px;}
+  .rs-header .rs-job-desc{
+    color:var(--muted); font-size:13.5px; max-width:720px; line-height:1.5;
+    white-space:pre-wrap; margin-top:6px;
+  }
+  .rs-stats-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .rs-stat-pill{
+    background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    padding:6px 13px; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:6px;
+  }
+  .rs-stat-dot{width:7px; height:7px; border-radius:50%;}
+
+  /* ---------- Dropzone ---------- */
+  .rs-dropzone{
+    border:1.5px dashed var(--border); border-radius:var(--radius-lg); background:var(--surface);
+    padding:34px 24px; text-align:center; transition:border-color .15s, background .15s; margin-bottom:26px;
+  }
+  .rs-dropzone.rs-drag-over{border-color:var(--accent); background:var(--accent-bg);}
+  .rs-dropzone h3{font-family:var(--font-display); font-size:17px; font-weight:600; margin:10px 0 4px;}
+  .rs-dropzone p{color:var(--muted); font-size:13px; margin:0 0 14px;}
+  .rs-dz-icon{font-size:26px;}
+  .rs-file-input{display:none;}
+
+  /* ---------- Processing queue ---------- */
+  .rs-queue{display:flex; flex-direction:column; gap:8px; margin-bottom:24px;}
+  .rs-queue-item{
+    display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:10px 13px; font-size:13px;
+  }
+  .rs-queue-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500;}
+  .rs-queue-status{font-size:11.5px; color:var(--muted); font-family:var(--font-mono); flex-shrink:0;}
+  .rs-queue-status.err{color:var(--reject);}
+  .rs-spinner{
+    width:13px; height:13px; border-radius:50%; border:2px solid var(--border); border-top-color:var(--accent);
+    animation:rs-spin .7s linear infinite; flex-shrink:0;
+  }
+  @keyframes rs-spin{to{transform:rotate(360deg);}}
+
+  /* ---------- Candidate list ---------- */
+  .rs-candidate-list{display:flex; flex-direction:column; gap:10px;}
+  .rs-candidate-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg);
+    padding:16px 18px; display:flex; align-items:center; gap:16px; cursor:pointer; transition:box-shadow .15s, border-color .15s;
+  }
+  .rs-candidate-card:hover{border-color:var(--accent); box-shadow:0 2px 10px rgba(52,84,209,0.08);}
+  .rs-gauge{flex-shrink:0; position:relative; width:56px; height:56px;}
+  .rs-gauge svg{transform:rotate(-90deg);}
+  .rs-gauge-score{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:700; font-size:15px;
+  }
+  .rs-cand-info{flex:1; min-width:0;}
+  .rs-cand-name{font-weight:600; font-size:15px; margin-bottom:2px;}
+  .rs-cand-meta{font-size:12.5px; color:var(--muted);}
+  .rs-badge{
+    font-size:11px; font-weight:700; padding:5px 10px; border-radius:20px; letter-spacing:.02em;
+    text-transform:uppercase; flex-shrink:0; font-family:var(--font-mono);
+  }
+  .rs-badge-shortlist{background:var(--shortlist-bg); color:var(--shortlist);}
+  .rs-badge-review{background:var(--review-bg); color:var(--review);}
+  .rs-badge-reject{background:var(--reject-bg); color:var(--reject);}
+  .rs-cand-arrow{color:var(--muted); flex-shrink:0;}
+  .rs-empty{
+    text-align:center; padding:50px 20px; color:var(--muted); font-size:13.5px;
+    background:var(--surface); border:1px dashed var(--border); border-radius:var(--radius-lg);
+  }
+
+  /* ---------- Detail drawer ---------- */
+  .rs-overlay{
+    position:fixed; inset:0; background:rgba(23,27,38,0.35); display:flex; justify-content:flex-end; z-index:50;
+  }
+  .rs-drawer{
+    width:min(520px, 100%); background:var(--surface); height:100vh; overflow-y:auto; padding:26px 28px 40px;
+    box-shadow:-8px 0 24px rgba(0,0,0,0.08);
+  }
+  .rs-drawer-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px;}
+  .rs-drawer-close{background:var(--surface-2); border:none; width:30px; height:30px; border-radius:50%; font-size:15px; color:var(--muted);}
+  .rs-drawer-close:hover{background:var(--border);}
+  .rs-drawer h2{font-family:var(--font-display); font-size:22px; margin:0 0 4px;}
+  .rs-drawer .rs-cand-meta{font-size:13px;}
+  .rs-drawer-section{margin-top:22px;}
+  .rs-drawer-section h4{
+    font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--muted); font-weight:600; margin:0 0 9px;
+  }
+  .rs-tag-list{display:flex; flex-wrap:wrap; gap:6px;}
+  .rs-tag{background:var(--surface-2); border-radius:6px; padding:5px 9px; font-size:12.5px;}
+  .rs-tag-good{background:var(--shortlist-bg); color:var(--shortlist);}
+  .rs-tag-gap{background:var(--reject-bg); color:var(--reject);}
+  .rs-summary-box{
+    background:var(--surface-2); border-radius:10px; padding:13px 14px; font-size:13.5px; line-height:1.55;
+  }
+  .rs-breakdown-list{display:flex; flex-direction:column; gap:1px; border-radius:10px; overflow:hidden; border:1px solid var(--border);}
+  .rs-breakdown-row{
+    display:flex; justify-content:space-between; align-items:center; background:var(--surface);
+    padding:8px 12px; font-size:13px;
+  }
+  .rs-breakdown-row:nth-child(even){background:var(--surface-2);}
+  .rs-breakdown-val{font-family:var(--font-mono); font-weight:600; color:var(--muted); font-size:12.5px;}
+  .rs-drawer textarea{
+    width:100%; border:1px solid var(--border); border-radius:8px; padding:11px 12px; font-size:13.5px;
+    line-height:1.55; resize:vertical; min-height:150px; outline:none; background:var(--bg);
+  }
+  .rs-drawer textarea:focus{border-color:var(--accent);}
+  .rs-drawer input.rs-subject{
+    width:100%; border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13.5px;
+    margin-bottom:8px; outline:none; background:var(--bg); font-weight:600;
+  }
+  .rs-drawer input.rs-subject:focus{border-color:var(--accent);}
+  .rs-drawer-actions{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+  .rs-sent-note{font-size:12px; color:var(--shortlist); margin-top:8px; font-weight:600;}
+
+  /* ---------- Modal ---------- */
+  .rs-modal-overlay{
+    position:fixed; inset:0; background:rgba(23,27,38,0.4); display:flex; align-items:center; justify-content:center; z-index:60; padding:20px;
+  }
+  .rs-modal{background:var(--surface); border-radius:var(--radius-lg); width:min(520px,100%); padding:26px 26px 22px;}
+  .rs-modal h3{font-family:var(--font-display); font-size:19px; margin:0 0 16px;}
+  .rs-modal .rs-field{margin-bottom:14px;}
+  .rs-modal textarea{
+    width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13.5px;
+    min-height:130px; outline:none; resize:vertical; background:var(--bg);
+  }
+  .rs-modal textarea:focus, .rs-modal input:focus{border-color:var(--accent);}
+  .rs-modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:6px;}
+
+  .rs-recommend-select{display:flex; gap:8px; margin-top:16px;}
+</style>
+
+<div id="rs-root"></div>
+
+<script>
+(function(){
+  const root = document.getElementById('rs-root');
+
+  let state = {
+    view: 'loading',
+    hrName: null,
+    jobs: [],
+    currentJobId: null,
+    candidatesByJob: {},
+    dragOver: false,
+    processing: [],
+    detailCandidateId: null,
+    showJobModal: false,
+    storageError: false
+  };
+
+  function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,10); }
+
+  async function safeGet(key){
+    try{ const r = await window.storage.get(key, false); return r ? JSON.parse(r.value) : null; }
+    catch(e){ return null; }
+  }
+  async function safeSet(key, value){
+    try{ await window.storage.set(key, JSON.stringify(value), false); return true; }
+    catch(e){ state.storageError = true; return false; }
+  }
+
+  async function init(){
+    const profile = await safeGet('hr-profile');
+    const jobs = await safeGet('jobs');
+    state.jobs = jobs || [];
+    if(profile && profile.name){
+      state.hrName = profile.name;
+      state.view = 'main';
+      if(state.jobs.length){
+        state.currentJobId = state.jobs[0].id;
+        await loadCandidates(state.currentJobId);
+      }
+    } else {
+      state.view = 'welcome';
+    }
+    render();
+  }
+
+  async function loadCandidates(jobId){
+    if(state.candidatesByJob[jobId]) return;
+    const c = await safeGet('candidates:' + jobId);
+    state.candidatesByJob[jobId] = c || [];
+  }
+
+  function currentCandidates(){
+    return state.candidatesByJob[state.currentJobId] || [];
+  }
+  function currentJob(){
+    return state.jobs.find(j => j.id === state.currentJobId);
+  }
+
+  async function saveCandidates(jobId){
+    await safeSet('candidates:' + jobId, state.candidatesByJob[jobId] || []);
+  }
+
+  // ---------------- File extraction ----------------
+  if(window.pdfjsLib){
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  async function extractText(file){
+    const name = file.name.toLowerCase();
+    if(name.endsWith('.pdf')){
+      const buf = await file.arrayBuffer();
+      const doc = await pdfjsLib.getDocument({data: buf}).promise;
+      let text = '';
+      for(let i=1;i<=doc.numPages;i++){
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(it => it.str).join(' ') + '\n';
+      }
+      return text;
+    } else if(name.endsWith('.docx')){
+      const buf = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({arrayBuffer: buf});
+      return result.value;
+    } else {
+      return await file.text();
+    }
+  }
+
+  // ---------------- AI analysis ----------------
+  async function analyzeResume(resumeText, job){
+    const prompt =
+`You are an experienced technical recruiter assistant. Analyze this candidate's resume against the job description below and respond with ONLY valid JSON, no markdown code fences, no preamble, no explanation outside the JSON. Match this exact shape:
+
+{
+  "name": string,
+  "email": string,
+  "phone": string,
+  "currentTitle": string,
+  "yearsExperience": string,
+  "topSkills": [string,...] (up to 5),
+  "scoreBreakdown": {
+    "technicalSkills": number (0-40, technical/tool match against required + preferred skills),
+    "experience": number (0-20, years and relevance of experience),
+    "education": number (0-10),
+    "projects": number (0-15, projects/portfolio quality and relevance),
+    "certifications": number (0-5),
+    "resumeQuality": number (0-5, clarity and organization of the resume itself),
+    "bonusSkills": number (0-5, e.g. Git, teamwork, communication, extras)
+  },
+  "strengths": [string,...] (up to 3, short phrases),
+  "missingSkills": [string,...] (up to 3, short phrases, empty array if none),
+  "summary": string (max 2 sentences explaining the overall score),
+  "emailSubject": string,
+  "emailBody": string (under 110 words, professional tone, signed "Hiring Team". Write it as a review/consideration email - it will be adjusted automatically if the candidate turns out to be a strong or weak match.)
+}
+
+Scoring rules:
+- Award points only when evidence exists in the resume. Never assume missing information.
+- Score each category independently, within its stated max, and be objective and consistent.
+- Do NOT decide an overall recommendation or total score yourself - the app computes those from your per-category breakdown using a fixed policy, so category scores are all that matter.
+
+Use "Not found" for any candidate field you cannot determine. Keep every array item concise.
+
+JOB TITLE: ${job.title}
+
+JOB DESCRIPTION:
+${job.description}
+
+RESUME TEXT:
+${resumeText.slice(0, 12000)}`;
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{role: "user", content: prompt}]
+      })
+    });
+    if(!response.ok){
+      throw new Error("AI request failed (" + response.status + ")");
+    }
+    const data = await response.json();
+    const textBlock = (data.content || []).map(b => b.text || '').join('\n');
+    const cleaned = textBlock.replace(/```json/g,'').replace(/```/g,'').trim();
+    const jsonStart = cleaned.indexOf('{');
+    const jsonEnd = cleaned.lastIndexOf('}');
+    if(jsonStart === -1 || jsonEnd === -1) throw new Error("AI response was not valid JSON");
+    return JSON.parse(cleaned.slice(jsonStart, jsonEnd+1));
+  }
+
+  // ---------------- Hiring policy (kept out of the AI prompt on purpose - see pasted rubric) ----------------
+  const SCORE_CATEGORY_MAX = {
+    technicalSkills: 40, experience: 20, education: 10, projects: 15,
+    certifications: 5, resumeQuality: 5, bonusSkills: 5
+  };
+  const SCORE_CATEGORY_LABELS = [
+    ['technicalSkills', 'Technical skills match'],
+    ['experience', 'Experience'],
+    ['education', 'Education'],
+    ['projects', 'Projects & portfolio'],
+    ['certifications', 'Certifications'],
+    ['resumeQuality', 'Resume quality'],
+    ['bonusSkills', 'Bonus skills']
+  ];
+
+  function normalizeScoreBreakdown(raw){
+    const breakdown = {};
+    let total = 0;
+    for(const key in SCORE_CATEGORY_MAX){
+      const max = SCORE_CATEGORY_MAX[key];
+      const val = Math.max(0, Math.min(max, Math.round(Number((raw && raw[key]) || 0))));
+      breakdown[key] = val;
+      total += val;
+    }
+    return {breakdown, total};
+  }
+
+  // Mirrors the Hiring Decision table: 85-100 Strong Shortlist, 70-84 Shortlist,
+  // 60-69 Needs HR Review, below 60 Reject. Collapsed to the app's 3-state badge system.
+  function decisionForScore(score){
+    if(score >= 85) return {recommendation: 'Shortlist', label: 'Strong Shortlist'};
+    if(score >= 70) return {recommendation: 'Shortlist', label: 'Shortlist'};
+    if(score >= 60) return {recommendation: 'Review', label: 'Needs HR Review'};
+    return {recommendation: 'Reject', label: 'Not Selected'};
+  }
+
+  // ---------------- File handling ----------------
+  async function handleFiles(fileList){
+    const job = currentJob();
+    if(!job){ alert('Select or create a job position first.'); return; }
+    const files = Array.from(fileList).filter(f => /\.(pdf|docx|txt)$/i.test(f.name));
+    if(!files.length){ alert('Please drop .pdf, .docx or .txt resume files.'); return; }
+
+    const queueEntries = files.map(f => ({ id: uid('q'), name: f.name, status: 'Waiting', error:false }));
+    state.processing = state.processing.concat(queueEntries);
+    render();
+
+    for(let i=0;i<files.length;i++){
+      const entry = queueEntries[i];
+      try{
+        entry.status = 'Reading file'; render();
+        const text = await extractText(files[i]);
+        if(!text || text.trim().length < 30) throw new Error('Could not read text from file');
+
+        entry.status = 'Analyzing with AI'; render();
+        const result = await analyzeResume(text, job);
+        const {breakdown, total} = normalizeScoreBreakdown(result.scoreBreakdown);
+        const decision = decisionForScore(total);
+
+        const candidate = {
+          id: uid('c'),
+          fileName: files[i].name,
+          name: result.name || 'Not found',
+          email: result.email || 'Not found',
+          phone: result.phone || 'Not found',
+          currentTitle: result.currentTitle || 'Not found',
+          yearsExperience: result.yearsExperience || 'Not found',
+          topSkills: result.topSkills || [],
+          scoreBreakdown: breakdown,
+          score: total,
+          recommendation: decision.recommendation,
+          recommendationLabel: decision.label,
+          strengths: result.strengths || [],
+          missingSkills: result.missingSkills || [],
+          summary: result.summary || '',
+          emailSubject: result.emailSubject || ('Regarding your application - ' + job.title),
+          emailBody: result.emailBody || '',
+          status: 'reviewed_pending',
+          sent: false,
+          analyzedAt: new Date().toISOString()
+        };
+
+        if(!state.candidatesByJob[job.id]) state.candidatesByJob[job.id] = [];
+        state.candidatesByJob[job.id].unshift(candidate);
+        await saveCandidates(job.id);
+
+        entry.status = 'Done';
+        state.processing = state.processing.filter(p => p.id !== entry.id);
+        render();
+      } catch(err){
+        entry.status = err.message || 'Failed'; entry.error = true;
+        render();
+        setTimeout(() => {
+          state.processing = state.processing.filter(p => p.id !== entry.id);
+          render();
+        }, 5000);
+      }
+    }
+  }
+
+  // ---------------- Rendering ----------------
+  function render(){
+    if(state.view === 'loading'){ root.innerHTML = ''; return; }
+    if(state.view === 'welcome'){ renderWelcome(); return; }
+    renderMain();
+  }
+
+  function renderWelcome(){
+    root.innerHTML = `
+      <div class="rs-welcome">
+        <div class="rs-welcome-card">
+          <div class="rs-eyebrow">Resume Screener &middot; MVP</div>
+          <h1>Let's get set up</h1>
+          <p>Drop resumes in, get AI-scored matches against your job description, and send review emails &mdash; all without a candidate portal.</p>
+          <div class="rs-field">
+            <label>Your name</label>
+            <input id="rs-hr-name-input" type="text" placeholder="e.g. Sara Khan" autofocus/>
+          </div>
+          <button class="rs-btn rs-btn-block" id="rs-welcome-continue">Continue &rarr;</button>
+        </div>
+      </div>
+    `;
+    const input = document.getElementById('rs-hr-name-input');
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') submitWelcome(); });
+    document.getElementById('rs-welcome-continue').addEventListener('click', submitWelcome);
+  }
+
+  async function submitWelcome(){
+    const input = document.getElementById('rs-hr-name-input');
+    const name = (input.value || '').trim();
+    if(!name){ input.focus(); return; }
+    state.hrName = name;
+    await safeSet('hr-profile', {name});
+    state.view = 'main';
+    render();
+  }
+
+  function gaugeSvg(score){
+    const r = 22, c = 2*Math.PI*r;
+    const offset = c - (score/100)*c;
+    const color = score >= 70 ? 'var(--shortlist)' : (score >= 60 ? 'var(--review)' : 'var(--reject)');
+    return `
+      <div class="rs-gauge">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="5"/>
+          <circle cx="28" cy="28" r="${r}" fill="none" stroke="${color}" stroke-width="5"
+            stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"/>
+        </svg>
+        <div class="rs-gauge-score" style="color:${color}">${score}</div>
+      </div>`;
+  }
+
+  function badgeHtml(rec, label){
+    const cls = rec === 'Shortlist' ? 'rs-badge-shortlist' : (rec === 'Reject' ? 'rs-badge-reject' : 'rs-badge-review');
+    return `<span class="rs-badge ${cls}">${escapeHtml(label || rec)}</span>`;
+  }
+
+  function renderMain(){
+    const job = currentJob();
+    const candidates = currentCandidates();
+    const shortlisted = candidates.filter(c => c.recommendation === 'Shortlist').length;
+    const review = candidates.filter(c => c.recommendation === 'Review').length;
+    const rejected = candidates.filter(c => c.recommendation === 'Reject').length;
+
+    root.innerHTML = `
+      <div class="rs-shell">
+        <div class="rs-sidebar">
+          <div class="rs-brand">
+            <div class="rs-brand-mark">R</div>
+            <div>
+              <div class="rs-brand-name">Resume Screener</div>
+              <div class="rs-brand-sub">HR-first triage</div>
+            </div>
+          </div>
+          <div class="rs-hr-name">Signed in as <strong>${escapeHtml(state.hrName)}</strong></div>
+          <div>
+            <div class="rs-sidebar-section-label">Job Positions</div>
+            <div class="rs-job-list" id="rs-job-list">
+              ${state.jobs.map(j => `
+                <div class="rs-job-item ${j.id === state.currentJobId ? 'active' : ''}" data-job-id="${j.id}">
+                  <div>${escapeHtml(j.title)}</div>
+                  <div class="rs-job-count">${(state.candidatesByJob[j.id] || []).length} candidate${(state.candidatesByJob[j.id]||[]).length===1?'':'s'}</div>
+                </div>
+              `).join('') || '<div style="font-size:12.5px;color:var(--muted);padding:6px 2px;">No positions yet</div>'}
+            </div>
+            <button class="rs-add-job-btn" id="rs-add-job-btn" style="margin-top:8px;">+ Add job position</button>
+          </div>
+          <div class="rs-sidebar-footer">MVP workflow: HR uploads &rarr; AI scores &rarr; HR approves &amp; sends.</div>
+        </div>
+
+        <div class="rs-main">
+          ${job ? renderJobHeader(job, shortlisted, review, rejected) : renderNoJobState()}
+          ${job ? renderDropzone() : ''}
+          ${state.processing.length ? renderQueue() : ''}
+          ${job ? renderCandidateList(candidates) : ''}
+        </div>
+      </div>
+      ${state.showJobModal ? renderJobModal() : ''}
+      ${state.detailCandidateId ? renderDrawer() : ''}
+    `;
+
+    attachMainListeners();
+  }
+
+  function renderNoJobState(){
+    return `
+      <div class="rs-header">
+        <h2>Welcome, ${escapeHtml(state.hrName.split(' ')[0])}</h2>
+        <div class="rs-job-desc">Create your first job position to start screening resumes.</div>
+      </div>
+      <div class="rs-empty">No job position selected yet. Click "+ Add job position" in the sidebar to begin.</div>
+    `;
+  }
+
+  function renderJobHeader(job, shortlisted, review, rejected){
+    return `
+      <div class="rs-header">
+        <h2>${escapeHtml(job.title)}</h2>
+        <div class="rs-job-desc">${escapeHtml(job.description)}</div>
+        <div class="rs-stats-row">
+          <div class="rs-stat-pill"><span class="rs-stat-dot" style="background:var(--shortlist)"></span>${shortlisted} Shortlist</div>
+          <div class="rs-stat-pill"><span class="rs-stat-dot" style="background:var(--review)"></span>${review} Review</div>
+          <div class="rs-stat-pill"><span class="rs-stat-dot" style="background:var(--reject)"></span>${rejected} Reject</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDropzone(){
+    return `
+      <div class="rs-dropzone ${state.dragOver ? 'rs-drag-over' : ''}" id="rs-dropzone">
+        <div class="rs-dz-icon">📥</div>
+        <h3>Drag &amp; drop resumes here</h3>
+        <p>PDF, DOCX or TXT &middot; drop one or several at once</p>
+        <button class="rs-btn rs-btn-secondary" id="rs-browse-btn">Browse files</button>
+        <input type="file" id="rs-file-input" class="rs-file-input" multiple accept=".pdf,.docx,.txt"/>
+      </div>
+    `;
+  }
+
+  function renderQueue(){
+    return `
+      <div class="rs-queue">
+        ${state.processing.map(p => `
+          <div class="rs-queue-item">
+            ${p.error ? '⚠️' : '<div class="rs-spinner"></div>'}
+            <div class="rs-queue-name">${escapeHtml(p.name)}</div>
+            <div class="rs-queue-status ${p.error?'err':''}">${escapeHtml(p.status)}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderCandidateList(candidates){
+    if(!candidates.length){
+      return `<div class="rs-empty">No candidates yet for this position. Drop resumes above to get started.</div>`;
+    }
+    const sorted = [...candidates].sort((a,b) => b.score - a.score);
+    return `
+      <div class="rs-candidate-list">
+        ${sorted.map(c => `
+          <div class="rs-candidate-card" data-cand-id="${c.id}">
+            ${gaugeSvg(c.score)}
+            <div class="rs-cand-info">
+              <div class="rs-cand-name">${escapeHtml(c.name)}</div>
+              <div class="rs-cand-meta">${escapeHtml(c.currentTitle)} &middot; ${escapeHtml(c.yearsExperience)}${c.sent ? ' &middot; ✅ Email sent' : ''}</div>
+            </div>
+            ${badgeHtml(c.recommendation, c.recommendationLabel)}
+            <div class="rs-cand-arrow">›</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function renderDrawer(){
+    const candidates = currentCandidates();
+    const c = candidates.find(x => x.id === state.detailCandidateId);
+    if(!c) return '';
+    return `
+      <div class="rs-overlay" id="rs-drawer-overlay">
+        <div class="rs-drawer" id="rs-drawer">
+          <div class="rs-drawer-top">
+            <div>
+              <h2>${escapeHtml(c.name)}</h2>
+              <div class="rs-cand-meta">${escapeHtml(c.currentTitle)} &middot; ${escapeHtml(c.yearsExperience)}</div>
+              <div class="rs-cand-meta">${escapeHtml(c.email)} &middot; ${escapeHtml(c.phone)}</div>
+              <div style="margin-top:10px;">${badgeHtml(c.recommendation, c.recommendationLabel)} <span style="font-family:var(--font-mono);font-weight:700;font-size:13px;margin-left:8px;">${c.score}/100</span></div>
+            </div>
+            <button class="rs-drawer-close" id="rs-drawer-close">✕</button>
+          </div>
+
+          <div class="rs-drawer-section">
+            <h4>Why this score</h4>
+            <div class="rs-summary-box">${escapeHtml(c.summary || 'No summary available.')}</div>
+          </div>
+
+          ${c.scoreBreakdown ? `
+          <div class="rs-drawer-section">
+            <h4>Score breakdown</h4>
+            <div class="rs-breakdown-list">
+              ${SCORE_CATEGORY_LABELS.map(([key, label]) => `
+                <div class="rs-breakdown-row">
+                  <span>${label}</span>
+                  <span class="rs-breakdown-val">${c.scoreBreakdown[key] ?? 0}/${SCORE_CATEGORY_MAX[key]}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>` : ''}
+
+          <div class="rs-drawer-section">
+            <h4>Strengths</h4>
+            <div class="rs-tag-list">
+              ${(c.strengths.length ? c.strengths : ['None identified']).map(s => `<span class="rs-tag rs-tag-good">${escapeHtml(s)}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="rs-drawer-section">
+            <h4>Missing / gaps</h4>
+            <div class="rs-tag-list">
+              ${(c.missingSkills.length ? c.missingSkills : ['None identified']).map(s => `<span class="rs-tag rs-tag-gap">${escapeHtml(s)}</span>`).join('')}
+            </div>
+          </div>
+
+          ${c.topSkills.length ? `
+          <div class="rs-drawer-section">
+            <h4>Key skills on resume</h4>
+            <div class="rs-tag-list">
+              ${c.topSkills.map(s => `<span class="rs-tag">${escapeHtml(s)}</span>`).join('')}
+            </div>
+          </div>` : ''}
+
+          <div class="rs-drawer-section">
+            <h4>Recommendation</h4>
+            <div class="rs-recommend-select">
+              ${['Shortlist','Review','Reject'].map(r => `
+                <button class="rs-btn ${c.recommendation===r ? '' : 'rs-btn-secondary'}" style="font-size:12.5px;padding:8px 12px;" data-set-rec="${r}">${r}</button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="rs-drawer-section">
+            <h4>Email draft</h4>
+            <input type="text" class="rs-subject" id="rs-email-subject" value="${escapeAttr(c.emailSubject)}"/>
+            <textarea id="rs-email-body">${escapeHtml(c.emailBody)}</textarea>
+            <div class="rs-drawer-actions">
+              <button class="rs-btn" id="rs-send-email">Send email</button>
+              <button class="rs-btn rs-btn-secondary" id="rs-copy-email">Copy text</button>
+            </div>
+            ${c.sent ? '<div class="rs-sent-note">✅ Marked as sent</div>' : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderJobModal(){
+    return `
+      <div class="rs-modal-overlay" id="rs-modal-overlay">
+        <div class="rs-modal">
+          <h3>New job position</h3>
+          <div class="rs-field">
+            <label>Job title</label>
+            <input type="text" id="rs-job-title" placeholder="e.g. Senior Backend Engineer"/>
+          </div>
+          <div class="rs-field">
+            <label>Job description</label>
+            <textarea id="rs-job-desc" placeholder="Paste the responsibilities, required skills, and qualifications..."></textarea>
+          </div>
+          <div class="rs-modal-actions">
+            <button class="rs-btn rs-btn-secondary" id="rs-job-cancel">Cancel</button>
+            <button class="rs-btn" id="rs-job-save">Save position</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(str){
+    if(str === undefined || str === null) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function escapeAttr(str){ return escapeHtml(str); }
+
+  // ---------------- Event wiring ----------------
+  function attachMainListeners(){
+    document.querySelectorAll('.rs-job-item').forEach(el => {
+      el.addEventListener('click', async () => {
+        state.currentJobId = el.getAttribute('data-job-id');
+        await loadCandidates(state.currentJobId);
+        render();
+      });
+    });
+
+    const addJobBtn = document.getElementById('rs-add-job-btn');
+    if(addJobBtn) addJobBtn.addEventListener('click', () => { state.showJobModal = true; render(); });
+
+    const dropzone = document.getElementById('rs-dropzone');
+    if(dropzone){
+      dropzone.addEventListener('dragover', e => { e.preventDefault(); state.dragOver = true; dropzone.classList.add('rs-drag-over'); });
+      dropzone.addEventListener('dragleave', () => { state.dragOver = false; dropzone.classList.remove('rs-drag-over'); });
+      dropzone.addEventListener('drop', e => {
+        e.preventDefault(); state.dragOver = false;
+        handleFiles(e.dataTransfer.files);
+      });
+    }
+    const browseBtn = document.getElementById('rs-browse-btn');
+    const fileInput = document.getElementById('rs-file-input');
+    if(browseBtn && fileInput){
+      browseBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', e => { if(e.target.files.length) handleFiles(e.target.files); });
+    }
+
+    document.querySelectorAll('.rs-candidate-card').forEach(el => {
+      el.addEventListener('click', () => {
+        state.detailCandidateId = el.getAttribute('data-cand-id');
+        render();
+      });
+    });
+
+    // Modal
+    const modalOverlay = document.getElementById('rs-modal-overlay');
+    if(modalOverlay){
+      modalOverlay.addEventListener('click', e => { if(e.target === modalOverlay){ state.showJobModal = false; render(); } });
+      document.getElementById('rs-job-cancel').addEventListener('click', () => { state.showJobModal = false; render(); });
+      document.getElementById('rs-job-save').addEventListener('click', async () => {
+        const title = document.getElementById('rs-job-title').value.trim();
+        const desc = document.getElementById('rs-job-desc').value.trim();
+        if(!title || !desc){ alert('Please add both a title and description.'); return; }
+        const job = { id: uid('job'), title, description: desc, createdAt: new Date().toISOString() };
+        state.jobs.unshift(job);
+        state.candidatesByJob[job.id] = [];
+        await safeSet('jobs', state.jobs);
+        state.currentJobId = job.id;
+        state.showJobModal = false;
+        render();
+      });
+    }
+
+    // Drawer
+    const drawerOverlay = document.getElementById('rs-drawer-overlay');
+    if(drawerOverlay){
+      drawerOverlay.addEventListener('click', e => { if(e.target === drawerOverlay) closeDrawer(); });
+      document.getElementById('rs-drawer-close').addEventListener('click', closeDrawer);
+
+      document.querySelectorAll('[data-set-rec]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const rec = btn.getAttribute('data-set-rec');
+          const list = currentCandidates();
+          const c = list.find(x => x.id === state.detailCandidateId);
+          if(c){ c.recommendation = rec; c.recommendationLabel = null; await saveCandidates(state.currentJobId); render(); }
+        });
+      });
+
+      const subjectInput = document.getElementById('rs-email-subject');
+      const bodyInput = document.getElementById('rs-email-body');
+      subjectInput.addEventListener('input', () => {
+        const c = currentCandidates().find(x => x.id === state.detailCandidateId);
+        if(c) c.emailSubject = subjectInput.value;
+      });
+      subjectInput.addEventListener('blur', () => saveCandidates(state.currentJobId));
+      bodyInput.addEventListener('input', () => {
+        const c = currentCandidates().find(x => x.id === state.detailCandidateId);
+        if(c) c.emailBody = bodyInput.value;
+      });
+      bodyInput.addEventListener('blur', () => saveCandidates(state.currentJobId));
+
+      document.getElementById('rs-send-email').addEventListener('click', async () => {
+        const c = currentCandidates().find(x => x.id === state.detailCandidateId);
+        if(!c) return;
+        const to = c.email && c.email !== 'Not found' ? c.email : '';
+        const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(c.emailSubject)}&body=${encodeURIComponent(c.emailBody)}`;
+        window.open(mailto, '_blank');
+        c.sent = true;
+        await saveCandidates(state.currentJobId);
+        render();
+      });
+      document.getElementById('rs-copy-email').addEventListener('click', async () => {
+        const c = currentCandidates().find(x => x.id === state.detailCandidateId);
+        if(!c) return;
+        try{
+          await navigator.clipboard.writeText(`Subject: ${c.emailSubject}\n\n${c.emailBody}`);
+          const btn = document.getElementById('rs-copy-email');
+          const original = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = original; }, 1500);
+        }catch(e){}
+      });
+    }
+  }
+
+  function closeDrawer(){ state.detailCandidateId = null; render(); }
+
+  init();
+})();
+</script>

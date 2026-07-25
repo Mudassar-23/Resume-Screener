@@ -1,0 +1,33 @@
+John Doe
+Email: john.doe@example.com
+Phone: +1 (555) 019-2834
+Address: San Francisco, CA
+
+Professional Summary:
+Highly motivated Software Engineer with 5+ years of experience building scalable backend web applications and data services. Expert in Python programming and relational databases.
+
+Technical Skills:
+- Programming Languages: Python, JavaScript, Go, SQL
+- Frameworks: FastAPI, Flask, Django
+- Databases: PostgreSQL, SQLite, Redis
+- Tools & Cloud: Git, GitHub, Docker, Azure, AWS
+
+Experience:
+Senior Software Engineer | TechCorp Inc. (2022 - Present)
+- Designed and implemented high-performance REST APIs using FastAPI and Python, reducing response latency by 30%.
+- Designed database schemas and optimized complex SQL queries in PostgreSQL, improving throughput.
+- Containerized microservices using Docker and deployed them on Azure.
+
+Software Developer | DevSolutions Ltd. (2020 - 2022)
+- Built backend services and RESTful endpoints using Django and Python.
+- Utilized Git for version control and participated in code reviews.
+
+Education:
+Bachelor of Science in Computer Science | University of California, Berkeley (2016 - 2020)
+
+Projects:
+- Personal Portfolio: A web app displaying my projects, hosted on Azure.
+- Custom REST API: Built a high-performance backend API with FastAPI, PostgreSQL, and Docker.
+
+Certifications:
+- Azure Developer Associate
