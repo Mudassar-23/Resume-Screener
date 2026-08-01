@@ -11,6 +11,7 @@
     processing: [],
     detailCandidateId: null,
     showJobModal: false,
+    editingJobId: null,
     searchQuery: '',
     filterRecommend: 'All',
     darkMode: localStorage.getItem('rs-theme') !== 'light'   // dark by default
@@ -305,8 +306,16 @@
   function renderJobHeader(job, shortlisted, review, rejected){
     return `
       <div class="rs-header">
-        <h2>${escapeHtml(job.title)}</h2>
-        <div class="rs-job-desc">${escapeHtml(job.description)}</div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:12px;">
+          <div>
+            <h2 style="margin:0 0 8px;">${escapeHtml(job.title)}</h2>
+            <div class="rs-job-desc">${escapeHtml(job.description)}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-shrink:0;">
+            <button class="rs-btn rs-btn-secondary" id="rs-edit-job-btn" style="padding: 8px 14px; font-size: 13px;">✏️ Edit Position</button>
+            <button class="rs-btn rs-btn-danger" id="rs-delete-job-btn" style="padding: 8px 14px; font-size: 13px;">🗑️ Delete Position</button>
+          </div>
+        </div>
         <div class="rs-stats-row">
           <div class="rs-stat-pill"><span class="rs-stat-dot" style="background:var(--shortlist)"></span>${shortlisted} Shortlist</div>
           <div class="rs-stat-pill"><span class="rs-stat-dot" style="background:var(--review)"></span>${review} Review</div>
@@ -570,21 +579,22 @@
   }
 
   function renderJobModal(){
+    const jobToEdit = state.editingJobId ? state.jobs.find(j => j.id === state.editingJobId) : null;
     return `
       <div class="rs-modal-overlay" id="rs-modal-overlay">
         <div class="rs-modal">
-          <h3>New job position</h3>
+          <h3>${state.editingJobId ? 'Edit job position & requirements' : 'New job position'}</h3>
           <div class="rs-field">
             <label>Job title</label>
-            <input type="text" id="rs-job-title" placeholder="e.g. Senior Backend Engineer"/>
+            <input type="text" id="rs-job-title" placeholder="e.g. Senior Backend Engineer" value="${escapeAttr(jobToEdit ? jobToEdit.title : '')}"/>
           </div>
           <div class="rs-field">
-            <label>Job description</label>
-            <textarea id="rs-job-desc" placeholder="Paste the responsibilities, required skills, and qualifications..."></textarea>
+            <label>Job requirements & description</label>
+            <textarea id="rs-job-desc" placeholder="Paste the responsibilities, required skills, and qualifications...">${escapeHtml(jobToEdit ? jobToEdit.description : '')}</textarea>
           </div>
           <div class="rs-modal-actions">
             <button class="rs-btn rs-btn-secondary" id="rs-job-cancel">Cancel</button>
-            <button class="rs-btn" id="rs-job-save">Save position</button>
+            <button class="rs-btn" id="rs-job-save">${state.editingJobId ? 'Save Changes' : 'Save position'}</button>
           </div>
         </div>
       </div>
@@ -608,7 +618,33 @@
     });
 
     const addJobBtn = document.getElementById('rs-add-job-btn');
-    if(addJobBtn) addJobBtn.addEventListener('click', () => { state.showJobModal = true; render(); });
+    if(addJobBtn) addJobBtn.addEventListener('click', () => { state.editingJobId = null; state.showJobModal = true; render(); });
+
+    const editJobBtn = document.getElementById('rs-edit-job-btn');
+    if(editJobBtn) editJobBtn.addEventListener('click', () => { state.editingJobId = state.currentJobId; state.showJobModal = true; render(); });
+
+    const deleteJobBtn = document.getElementById('rs-delete-job-btn');
+    if(deleteJobBtn) deleteJobBtn.addEventListener('click', async () => {
+      const job = currentJob();
+      if(!job) return;
+      if(!confirm(`⚠️ Delete position "${job.title}" and all its candidate evaluations?\n\nThis cannot be undone.`)) return;
+      try {
+        deleteJobBtn.textContent = 'Deleting...';
+        deleteJobBtn.disabled = true;
+        await apiFetch(`/api/jobs/${job.id}`, { method: 'DELETE' });
+        state.jobs = state.jobs.filter(j => j.id !== job.id);
+        delete state.candidatesByJob[job.id];
+        state.currentJobId = state.jobs.length ? state.jobs[0].id : null;
+        if(state.currentJobId){
+          await loadCandidates(state.currentJobId);
+        }
+        render();
+      } catch (e) {
+        alert('Failed to delete position: ' + e.message);
+        deleteJobBtn.textContent = '🗑️ Delete Position';
+        deleteJobBtn.disabled = false;
+      }
+    });
 
     const themeToggleBtn = document.getElementById('rs-theme-toggle');
     if(themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
@@ -736,24 +772,37 @@
     // Modal Events
     const modalOverlay = document.getElementById('rs-modal-overlay');
     if(modalOverlay){
-      modalOverlay.addEventListener('click', e => { if(e.target === modalOverlay){ state.showJobModal = false; render(); } });
-      document.getElementById('rs-job-cancel').addEventListener('click', () => { state.showJobModal = false; render(); });
+      modalOverlay.addEventListener('click', e => { if(e.target === modalOverlay){ state.showJobModal = false; state.editingJobId = null; render(); } });
+      document.getElementById('rs-job-cancel').addEventListener('click', () => { state.showJobModal = false; state.editingJobId = null; render(); });
       document.getElementById('rs-job-save').addEventListener('click', async () => {
         const title = document.getElementById('rs-job-title').value.trim();
         const desc = document.getElementById('rs-job-desc').value.trim();
         if(!title || !desc){ alert('Please add both a title and description.'); return; }
         
         try {
-          const newJob = await apiFetch('/api/jobs', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ title, description: desc })
-          });
-          
-          state.jobs.unshift(newJob);
-          state.candidatesByJob[newJob.id] = [];
-          state.currentJobId = newJob.id;
+          if (state.editingJobId) {
+            const updatedJob = await apiFetch(`/api/jobs/${state.editingJobId}`, {
+              method: 'PUT',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ title, description: desc })
+            });
+            const idx = state.jobs.findIndex(j => j.id === state.editingJobId);
+            if (idx !== -1) {
+              state.jobs[idx].title = updatedJob.title;
+              state.jobs[idx].description = updatedJob.description;
+            }
+          } else {
+            const newJob = await apiFetch('/api/jobs', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ title, description: desc })
+            });
+            state.jobs.unshift(newJob);
+            state.candidatesByJob[newJob.id] = [];
+            state.currentJobId = newJob.id;
+          }
           state.showJobModal = false;
+          state.editingJobId = null;
           render();
         } catch (e) {
           alert('Failed to save job position: ' + e.message);

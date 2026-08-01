@@ -19,6 +19,10 @@ class JobCreate(BaseSchema):
     title: str
     description: str
 
+class JobUpdate(BaseSchema):
+    title: str
+    description: str
+
 class JobResponse(BaseSchema):
     id: str
     title: str
@@ -82,3 +86,15 @@ class CandidateRecommendationUpdate(BaseSchema):
 class CandidateEmailUpdate(BaseSchema):
     email_subject: str
     email_body: str
+
+# --- Candidate Summary Schema (Only key candidate fields) ---
+class CandidateSummaryResponse(BaseSchema):
+    job_id: str
+    full_name: str
+    email: str
+    phone: str
+    applied_position: str
+    years_experience: str
+    resume_total_score: int
+    recommendation: str
+

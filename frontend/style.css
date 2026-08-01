@@ -156,7 +156,19 @@ button {
 
 input, textarea, select {
   font-family: inherit;
+  color: var(--ink);
+  background-color: var(--bg);
   outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+select option {
+  background-color: var(--surface);
+  color: var(--ink);
 }
 
 /* ---------- Scrollbars ---------- */
@@ -216,6 +228,7 @@ input, textarea, select {
   line-height: 1.15;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -246,6 +259,7 @@ input, textarea, select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-size: 14.5px;
+  color: var(--ink);
   background: var(--bg);
   transition: all 0.2s ease;
 }
@@ -253,7 +267,8 @@ input, textarea, select {
 .rs-field input:focus {
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+  color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
 }
 
 .rs-btn {
@@ -682,6 +697,7 @@ input, textarea, select {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-size: 14px;
+  color: var(--ink);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
@@ -689,8 +705,9 @@ input, textarea, select {
 
 .rs-search-box input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .rs-filter-box {
@@ -711,6 +728,7 @@ input, textarea, select {
   border-radius: var(--radius);
   font-size: 13.5px;
   font-weight: 500;
+  color: var(--ink);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
@@ -719,6 +737,7 @@ input, textarea, select {
 
 .rs-filter-box select:focus {
   border-color: var(--accent);
+  color: var(--ink);
 }
 
 .rs-table-container {
@@ -1000,6 +1019,7 @@ input, textarea, select {
   line-height: 1.6;
   resize: vertical;
   min-height: 160px;
+  color: var(--ink);
   background: var(--bg);
   transition: all 0.2s ease;
 }
@@ -1007,7 +1027,8 @@ input, textarea, select {
 .rs-drawer textarea:focus {
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+  color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
 }
 
 .rs-drawer input.rs-subject {
@@ -1017,6 +1038,7 @@ input, textarea, select {
   padding: 12px 16px;
   font-size: 13.5px;
   margin-bottom: 4px;
+  color: var(--ink);
   background: var(--bg);
   font-weight: 600;
   transition: all 0.2s ease;
@@ -1025,7 +1047,8 @@ input, textarea, select {
 .rs-drawer input.rs-subject:focus {
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+  color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
 }
 
 .rs-drawer-actions {
@@ -1071,6 +1094,7 @@ input, textarea, select {
 
 .rs-modal {
   background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   width: min(520px, 100%);
   padding: 36px;
@@ -1082,6 +1106,7 @@ input, textarea, select {
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 700;
+  color: var(--ink);
   margin: 0 0 20px;
 }
 
@@ -1089,24 +1114,29 @@ input, textarea, select {
   margin-bottom: 18px;
 }
 
-.rs-modal textarea {
+.rs-modal input, .rs-modal textarea {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px 14px;
   font-size: 14px;
   line-height: 1.5;
-  min-height: 140px;
-  outline: none;
-  resize: vertical;
+  color: var(--ink);
   background: var(--bg);
+  outline: none;
   transition: all 0.2s ease;
 }
 
-.rs-modal textarea:focus {
+.rs-modal textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.rs-modal input:focus, .rs-modal textarea:focus {
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+  color: var(--ink);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
 }
 
 .rs-modal-actions {

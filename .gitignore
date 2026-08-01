@@ -4,6 +4,9 @@ backend/.env
 .env
 .env.*
 *.env
+*.pem
+*.key
+*.secret
 
 # ─── PYTHON VIRTUAL ENVIRONMENT ───────────────────────────────────────────────
 venv/

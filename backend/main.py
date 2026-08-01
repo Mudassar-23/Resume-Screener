@@ -1,5 +1,5 @@
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from backend.database import engine, Base
@@ -31,10 +31,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from backend.auth import security, verify_api_key
+
 # Register API Routers
 app.include_router(jobs.router)
 app.include_router(candidates.router)
 app.include_router(emails.router)
+
+@app.get("/profile")
+def profile(credentials=Depends(security), authenticated_token: str = Depends(verify_api_key)):
+    """Protected profile endpoint demonstrating HTTPBearer security checks."""
+    return {"message": "Authenticated", "credentials": credentials.credentials if credentials else "public"}
 
 # Mount Frontend static files
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
