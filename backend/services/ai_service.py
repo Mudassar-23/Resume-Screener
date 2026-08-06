@@ -1,7 +1,8 @@
 import os
 import json
 import re
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+import httpx
 from openai import AzureOpenAI, OpenAI
 from pydantic_settings import BaseSettings
 
@@ -10,6 +11,11 @@ class Settings(BaseSettings):
     azure_openai_api_key: str = ""
     azure_openai_api_version: str = "2024-02-15-preview"
     azure_openai_deployment_name: str = ""
+
+    # Corporate SSL / CA Bundle settings
+    ssl_cert_file: str = ""
+    requests_ca_bundle: str = ""
+    ssl_verify: str = ""
 
     class Config:
         env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
@@ -83,6 +89,10 @@ Examples:
 - Leadership
 - Teamwork
 - Problem Solving
+- Claude
+- Gemini
+- Langchain
+- AI
 
 ----------------------------------------
 HIRING RULES
@@ -502,16 +512,31 @@ Return ONLY the structured JSON response as specified in your formatting rules."
         # Azure AI Foundry supports both Azure OpenAI endpoints and Serverless API endpoints (Claude, Kimi, DeepSeek, Llama, etc.)
         model_target = deployment_name or "gpt-4o"
 
+        cert_path = (
+            settings.ssl_cert_file
+            or settings.requests_ca_bundle
+            or os.environ.get("SSL_CERT_FILE")
+            or os.environ.get("REQUESTS_CA_BUNDLE")
+        )
+
+        http_client = None
+        if cert_path:
+            clean_path = cert_path.strip().strip('"').strip("'")
+            if os.path.exists(clean_path):
+                http_client = httpx.Client(verify=clean_path)
+
         if "openai.azure.com" in endpoint.lower() or (settings.azure_openai_api_version and "models.ai.azure.com" not in endpoint.lower() and not endpoint.endswith("/v1")):
             client = AzureOpenAI(
+                azure_endpoint=endpoint,
                 api_key=api_key,
-                api_version=settings.azure_openai_api_version or "2024-02-15-preview",
-                azure_endpoint=endpoint
+                api_version=settings.azure_openai_api_version,
+                http_client=http_client
             )
         else:
             client = OpenAI(
+                base_url=endpoint,
                 api_key=api_key,
-                base_url=endpoint
+                http_client=http_client
             )
 
         response = client.chat.completions.create(
