@@ -1,6 +1,9 @@
 # 🤖 AI Resume Analyzer
 
 > A production-ready, full-stack intelligent resume screening system that automatically parses resumes, scores them against job descriptions, generates hiring recommendations, and drafts candidate emails — powered by **Azure AI Foundry / Azure OpenAI** (GPT-4o, Claude, Kimi, DeepSeek, etc.) with an offline **Job-Specific Mock Analyzer** fallback.
+---
+## Demo Video
+![Dashboard](frontend.mp4)
 
 ---
 ## 📋 Table of Contents
