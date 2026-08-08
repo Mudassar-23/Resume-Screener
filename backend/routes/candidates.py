@@ -14,9 +14,10 @@ from backend.schemas import (
 )
 from backend.services.resume_parser import extract_text
 from backend.services.ai_service import analyze_resume_with_ai
-from backend.services.scoring import process_scoring
+from backend.services.scoring import process_scoring, calculate_recommendation
 
 router = APIRouter(prefix="/api", tags=["Candidates"])
+
 
 # Ensure uploads directory exists
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
@@ -118,17 +119,46 @@ async def upload_and_process_resume(
         
         # Parse basic candidate details
         cand_info = ai_result.get("candidate_information", {})
-        cand_name = cand_info.get("name") or ai_result.get("name") or "Not found"
-        cand_email = cand_info.get("email") or ai_result.get("email") or "Not found"
-        cand_phone = cand_info.get("phone") or ai_result.get("phone") or "Not found"
+        cand_name = (
+            cand_info.get("name") 
+            or ai_result.get("candidate_name") 
+            or ai_result.get("full_name") 
+            or ai_result.get("name") 
+            or "Not found"
+        )
+        cand_email = (
+            cand_info.get("email") 
+            or ai_result.get("email") 
+            or "Not found"
+        )
+        cand_phone = (
+            cand_info.get("phone") 
+            or ai_result.get("phone") 
+            or "Not found"
+        )
         
         # Parse applied position
-        applied_pos = cand_info.get("applied_position") or ai_result.get("currentTitle") or job.title or "Not found"
+        applied_pos = (
+            cand_info.get("applied_position") 
+            or ai_result.get("applied_position") 
+            or ai_result.get("target_position") 
+            or ai_result.get("currentTitle") 
+            or job.title 
+            or "Not found"
+        )
+
+        # Allow total score from normalize_ai_response if present
+        if "total_score" in ai_result and isinstance(ai_result["total_score"], int):
+            total_score = ai_result["total_score"]
+
+        # Enforce strict score-based recommendation calculation
+        rec, rec_label = calculate_recommendation(total_score)
         
-        # Parse email
+        # Parse email draft
         email_data = ai_result.get("email", {})
         email_subj = email_data.get("subject") or ai_result.get("emailSubject") or f"Regarding your application - {job.title}"
         email_body = email_data.get("body") or ai_result.get("emailBody") or ""
+
         
         # Create candidate record
         db_cand = Candidate(
@@ -193,7 +223,22 @@ def get_candidates_for_job(job_id: str, db: Session = Depends(get_db)):
     if not job:
         raise HTTPException(status_code=404, detail="Job position not found")
         
-    return db.query(Candidate).filter(Candidate.job_id == job_id).order_by(Candidate.resume_total_score.desc()).all()
+    candidates = db.query(Candidate).filter(Candidate.job_id == job_id).order_by(Candidate.resume_total_score.desc()).all()
+    
+    # Auto-sanitize any legacy candidate records where recommendation conflicts with score
+    modified = False
+    for cand in candidates:
+        exp_rec, exp_label = calculate_recommendation(cand.resume_total_score or 0)
+        # Fix invalid Shortlist recommendations on low scoring candidates
+        if cand.resume_total_score < 60 and cand.recommendation == "Shortlist":
+            cand.recommendation = exp_rec
+            cand.recommendation_label = exp_label
+            modified = True
+    if modified:
+        db.commit()
+
+    return candidates
+
 
 @router.put("/candidates/{candidate_id}/recommendation", response_model=CandidateResponse)
 def update_candidate_recommendation(

@@ -3,19 +3,6 @@
 > A production-ready, full-stack intelligent resume screening system that automatically parses resumes, scores them against job descriptions, generates hiring recommendations, and drafts candidate emails — powered by **Azure AI Foundry / Azure OpenAI** (GPT-4o, Claude, Kimi, DeepSeek, etc.) with an offline **Job-Specific Mock Analyzer** fallback.
 
 ---
-## Dashboard
-
-![Login](frontend/1.png)
-
-## Resume Analysis
-
-![Dashboard](frontend/2.png)
-
-## Resume Analysis
-
-![Analysis](frontend/3.png)
-
----
 ## 📋 Table of Contents
 
 1. [Project Overview](#-project-overview)
@@ -256,12 +243,48 @@ AZURE_OPENAI_DEPLOYMENT_NAME=
 
 ---
 
+## 🐳 Running with Docker & Docker Compose
+
+You can launch the full application (Frontend, Backend, and PostgreSQL database) using Docker Compose with a single command:
+
+### Quickstart
+
+```bash
+docker compose up --build
+```
+
+### Container Services
+
+| Service | Port | Description |
+|---|---|---|
+| **Frontend (Nginx)** | `http://localhost:80` | Serves web app & reverse-proxies `/api` to backend |
+| **Backend (FastAPI)** | `http://localhost:8000` | FastAPI server & interactive `/docs` |
+| **Database (PostgreSQL)** | `localhost:5432` | PostgreSQL database storing jobs & candidate evaluations |
+
+### Useful Docker Commands
+
+```bash
+# Run in background (detached mode)
+docker compose up -d --build
+
+# View container logs
+docker compose logs -f
+
+# Stop all containers
+docker compose down
+
+# Stop containers and wipe PostgreSQL database volume
+docker compose down -v
+```
+
+---
+
 ## 🚀 Running Locally on Your Machine
 
 ### Step 1 — Clone & Activate Virtual Environment
 ```bash
 git clone <your-repository-url>
-cd "resume analyzer/website"
+cd "AI-Resume-Analyzer"
 python -m venv venv
 venv\Scripts\activate      # Windows
 # source venv/bin/activate # macOS/Linux
@@ -278,3 +301,4 @@ python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Open your browser at **http://localhost:8000**. Visit **http://localhost:8000/docs** for Swagger API documentation.
+

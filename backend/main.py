@@ -31,6 +31,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Prevent browser 304 caching during active development
+@app.middleware("http")
+async def add_no_cache_header(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api"):
+        return response
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
 from backend.auth import security, verify_api_key
 
 # Register API Routers
